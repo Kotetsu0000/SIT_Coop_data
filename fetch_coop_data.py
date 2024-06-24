@@ -14,7 +14,7 @@ TIME_COLMUN_NAME = [
     'cafeteria',#'カフェテリア',
     'coop_plaza_self',#'コーププラザ セルフ',
     'coop_plaza_counter',#'コーププラザ カウンター',
-    'dining_hall','食堂',
+    'dining_hall',#'食堂',
     'shibaura_bakery',#'芝浦ベーカリー 大学会館１階',
     'office',#'事務室',
     'realtor',#'お部屋探し',

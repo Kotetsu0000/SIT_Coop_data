@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>営業時間表</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        #dateSelect {
+            margin-bottom: 20px;
+        }
+        #openingHours {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>営業時間表</h1>
+        <label for="dateSelect">日付選択:</label>
+        <input type="date" id="dateSelect">
+        <div id="openingHours">
+            <!-- 営業時間がここに表示されます -->
+        </div>
+    </div>
+
+    <script>
+        // JSONデータのURL
+        const jsonDataUrl = 'https://raw.githubusercontent.com/Kotetsu0000/SIT_Coop_data/main/data/coop_data.json';
+
+        // ページ読み込み時に実行する関数
+        window.onload = function() {
+            const dateSelect = document.getElementById('dateSelect');
+            const openingHoursDiv = document.getElementById('openingHours');
+
+            // 日付選択時のイベントリスナー
+            dateSelect.addEventListener('change', async function() {
+                const selectedDate = dateSelect.value;
+                const data = await fetchJsonData(jsonDataUrl);
+                displayOpeningHours(data, selectedDate, openingHoursDiv);
+            });
+        };
+
+        // JSONデータを取得する関数
+        async function fetchJsonData(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('データを取得できませんでした。');
+                }
+                const jsonData = await response.json();
+                return jsonData;
+            } catch (error) {
+                console.error('エラー:', error);
+            }
+        }
+
+        // 選択された日付の営業時間を表示する関数
+        function displayOpeningHours(data, selectedDate, openingHoursDiv) {
+            const formattedDate = formatDate(selectedDate);
+            const selectedData = data[formattedDate];
+            if (selectedData) {
+                let html = `<h3>${formattedDate} (${selectedData.week_day}) の営業時間</h3>`;
+                html += '<ul>';
+                for (const key in selectedData) {
+                    if (key !== 'week_day') {
+                        html += `<li><strong>${key}:</strong> ${selectedData[key]}</li>`;
+                    }
+                }
+                html += '</ul>';
+                openingHoursDiv.innerHTML = html;
+            } else {
+                openingHoursDiv.innerHTML = `<p>${formattedDate} のデータはありません。</p>`;
+            }
+        }
+
+        // 日付をJSONデータのフォーマットに合わせる関数
+        function formatDate(dateString) {
+            const dateObj = new Date(dateString);
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            return `${year}_${month}_${day}`;
+        }
+    </script>
+</body>
+</html>
