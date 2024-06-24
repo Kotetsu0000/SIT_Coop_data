@@ -7,9 +7,9 @@
         "coop_plaza_self": "休業",
         "coop_plaza_counter": "休業",
         "dining_hall": "11:30-13:30",
-        "食堂": "休業",
         "shibaura_bakery": "休業",
-        "office": "10:30-17:30"
+        "office": "休業",
+        "realtor": "10:30-17:30"
     },
     "2024_06_02": {
         "week_day": "Sunday",
@@ -19,9 +19,9 @@
         "coop_plaza_self": "休業",
         "coop_plaza_counter": "休業",
         "dining_hall": "休業",
-        "食堂": "休業",
         "shibaura_bakery": "休業",
-        "office": "休業"
+        "office": "休業",
+        "realtor": "休業"
     },
     "2024_06_03": {
         "week_day": "Monday",
@@ -31,9 +31,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_04": {
         "week_day": "Tuesday",
@@ -43,9 +43,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_05": {
         "week_day": "Wednesday",
@@ -55,9 +55,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_06": {
         "week_day": "Thursday",
@@ -67,9 +67,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_07": {
         "week_day": "Friday",
@@ -79,9 +79,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-14:00",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-14:00",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_10": {
         "week_day": "Monday",
@@ -91,9 +91,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_11": {
         "week_day": "Tuesday",
@@ -103,9 +103,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_12": {
         "week_day": "Wednesday",
@@ -115,9 +115,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_13": {
         "week_day": "Thursday",
@@ -127,9 +127,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_14": {
         "week_day": "Friday",
@@ -139,9 +139,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-14:00",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-14:00",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_17": {
         "week_day": "Monday",
@@ -151,9 +151,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_18": {
         "week_day": "Tuesday",
@@ -163,9 +163,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_19": {
         "week_day": "Wednesday",
@@ -175,9 +175,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_20": {
         "week_day": "Thursday",
@@ -187,9 +187,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_21": {
         "week_day": "Friday",
@@ -199,9 +199,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-14:00",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-14:00",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_24": {
         "week_day": "Monday",
@@ -211,13 +211,21 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_25": {
         "week_day": "Tuesday",
-        "shop_self": "休業"
+        "shop_self": "休業",
+        "shop_counter": "休業",
+        "cafeteria": "休業",
+        "coop_plaza_self": "休業",
+        "coop_plaza_counter": "休業",
+        "dining_hall": "休業",
+        "shibaura_bakery": "休業",
+        "office": "休業",
+        "realtor": "休業"
     },
     "2024_06_26": {
         "week_day": "Wednesday",
@@ -227,9 +235,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_27": {
         "week_day": "Thursday",
@@ -239,9 +247,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_06_28": {
         "week_day": "Friday",
@@ -251,9 +259,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-14:00",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-14:00",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_07_01": {
         "week_day": "Monday",
@@ -263,9 +271,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_07_02": {
         "week_day": "Tuesday",
@@ -275,9 +283,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_07_03": {
         "week_day": "Wednesday",
@@ -287,9 +295,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_07_04": {
         "week_day": "Thursday",
@@ -299,9 +307,9 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-15:30",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-15:30",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     },
     "2024_07_05": {
         "week_day": "Friday",
@@ -311,8 +319,8 @@
         "coop_plaza_self": "8:30-17:30",
         "coop_plaza_counter": "10:00-17:30",
         "dining_hall": "8:15-19:20",
-        "食堂": "11:00-14:00",
-        "shibaura_bakery": "10:00-16:00",
-        "office": "10:30-17:30"
+        "shibaura_bakery": "11:00-14:00",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
     }
 }

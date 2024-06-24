@@ -151,7 +151,11 @@ def data_extract(pdf_path:str):
             proc_date = date_str_proc(date_text[0])
             current_date = year + '_' + proc_date[0]
             day_info[current_date] = [proc_date[1]]
-            day_info[current_date] += re.findall(pattern_dict['time_text'], text)
+            time_list = re.findall(pattern_dict['time_text'], text)
+            if len(time_list) == 1:# 学生大会の日対応
+                day_info[current_date] += ['休業' for _ in range(9)]
+            else:
+                day_info[current_date] += re.findall(pattern_dict['time_text'], text)
             current_date = None
         else:#特殊状態
             if current_date is None:
