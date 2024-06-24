@@ -116,7 +116,8 @@ def download_coopPDF() -> list:
             print(link['href'])
             pdf_url = link['href']
             pdf_path = PDF_FOLDER + pdf_url.split('/')[-1]
-            save_pdf(pdf_url, pdf_path)
+            if not file_exists(pdf_path):
+                save_pdf(pdf_url, pdf_path)
             save_pdf_path_list.append(pdf_path)
     return save_pdf_path_list
 
