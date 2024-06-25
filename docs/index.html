@@ -116,10 +116,10 @@
                 'shop_self': { 'name': 'ショップ セルフ', 'campus': 'toyosu' },
                 'shop_counter': { 'name': 'ショップ カウンター', 'campus': 'toyosu' },
                 'cafeteria': { 'name': 'カフェテリア', 'campus': 'toyosu' },
-                'coop_plaza_self': { 'name': 'コーププラザ セルフ', 'campus': 'omiya' },
-                'coop_plaza_counter': { 'name': 'コーププラザ カウンター', 'campus': 'omiya' },
+                'coop_plaza_self': { 'name': '生協プラザ セルフ', 'campus': 'omiya' },
+                'coop_plaza_counter': { 'name': '生協プラザ カウンター', 'campus': 'omiya' },
                 'dining_hall': { 'name': '食堂', 'campus': 'omiya' },
-                'shibaura_bakery': { 'name': '芝浦ベーカリー(大学会館1階)', 'campus': 'omiya' },
+                'shibaura_bakery': { 'name': '芝浦ベーカリー', 'campus': 'omiya' },
                 'office': { 'name': '事務室', 'campus': 'omiya' },
                 'realtor': { 'name': 'お部屋探し', 'campus': 'omiya' }
             };
@@ -148,7 +148,7 @@
                     if (campusData !== '') {
                         html += `<div class="campus-table"><h4>${campus === 'toyosu' ? '豊洲キャンパス' : '大宮キャンパス'}</h4>`;
                         html += '<table class="table">';
-                        html += '<thead><tr><th class="col-md-6">店舗/施設</th><th class="col-md-6">営業時間</th></tr></thead>';
+                        html += '<thead><tr><th class="col-md-9">店舗/施設</th><th class="col-md-3">営業時間</th></tr></thead>';
                         html += '<tbody>';
                         html += campusData;
                         html += '</tbody></table></div>';
