@@ -157,6 +157,18 @@ def data_extract(pdf_path:str):
             else:
                 day_info[current_date] += re.findall(pattern_dict['time_text'], text)
             current_date = None
+        if len(date_text) == 4:
+            time_list = re.findall(pattern_dict['time_text'], text)
+
+            proc_date = date_str_proc(date_text[0])
+            current_date = year + '_' + proc_date[0]
+            day_info_list = [proc_date[1]]# Weekday
+            day_info[current_date] = day_info_list + time_list[:9]
+
+            proc_date = date_str_proc(date_text[2])
+            current_date = year + '_' + proc_date[0]
+            day_info_list = [proc_date[1]]# Weekday
+            day_info[current_date] = day_info_list + time_list[9:]            
         else:#特殊状態
             if current_date is None:
                 if len(date_text) == 1:# 日付(最初)
