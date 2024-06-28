@@ -1,173 +1,251 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>芝浦工大生協営業時間表</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: auto;
-        }
-
-        #dateSelect {
-            margin-bottom: 20px;
-        }
-
-        #openingHours {
-            margin-top: 20px;
-        }
-
-        .campus-table {
-            margin-bottom: 30px;
-        }
-
-        .campus-table h4 {
-            border-left: 5px solid #007bff;
-            /* キャンパス名の強調 */
-            padding-left: 10px;
-            margin-bottom: 20px;
-        }
-
-        .table th {
-            background-color: #f8f9fa;
-            /* ヘッダーの背景色 */
-        }
-
-        .table td,
-        .table th {
-            padding: 12px;
-            /* セルの余白調整 */
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>芝浦工大 生協 営業時間情報</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_green.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.5.2/css/all.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+  <style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: linear-gradient(to bottom, #e0ffff, #cce0ff);
+    }
+  </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>芝浦工大生協営業時間表</h1>
-        <label for="dateSelect">日付選択:</label>
-        <input type="date" id="dateSelect">
-        <div id="openingHours">
-            <!-- 営業時間がここに表示されます -->
+  <div class="container mx-auto px-4 py-8">
+    <div class="bg-white p-8 rounded-lg shadow-lg">
+      <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">
+        芝浦工大 生協 営業時間情報
+      </h1>
+
+      <div class="flex flex-col md:flex-row justify-center items-center mb-4 date-selector">
+        <input type="text" id="dateSelect" name="dateSelect" class="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-md mb-2 md:mb-0 ml-2" placeholder="日付を選択">
+        <div class="flex justify-center space-x-4 date-buttons ml-2">
+          <button id="prevDate" class="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300">
+            &lt; 前日
+          </button>
+          <button id="todayButton" class="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300">
+            本日
+          </button>
+          <button id="nextDate" class="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300">
+            翌日 &gt;
+          </button>
         </div>
+      </div>
+
+      <div class="mb-6">
+        <select id="campusSelect" class="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-md">
+          <option value="all" selected>すべて</option>
+          <option value="omiya">大宮キャンパス</option>
+          <option value="toyosu">豊洲キャンパス</option>
+        </select>
+      </div>
+
+      <div id="openingHours" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      </div>
     </div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
-    <script>
-        // JSONデータのURL
-        const jsonDataUrl = 'https://raw.githubusercontent.com/Kotetsu0000/SIT_Coop_data/main/data/coop_data.json';
+  <script>
+    // JSONデータのURL
+    const jsonDataUrl = 'https://raw.githubusercontent.com/Kotetsu0000/SIT_Coop_data/main/data/coop_data.json';
 
-        // ページ読み込み時に実行する関数
-        window.onload = async function () {
-            const dateSelect = document.getElementById('dateSelect');
-            const openingHoursDiv = document.getElementById('openingHours');
+    // ページ読み込み時に実行する関数
+    window.onload = async function () {
+      const dateSelect = document.getElementById('dateSelect');
+      const openingHoursDiv = document.getElementById('openingHours');
+      const prevDateButton = document.getElementById('prevDate');
+      const nextDateButton = document.getElementById('nextDate');
+      const todayButton = document.getElementById('todayButton');
+      const campusSelect = document.getElementById('campusSelect');
 
-            // 日付選択時のイベントリスナー
-            dateSelect.addEventListener('change', async function () {
-                const selectedDate = dateSelect.value;
-                const data = await fetchJsonData(jsonDataUrl);
-                displayOpeningHours(data, selectedDate, openingHoursDiv);
+      // JSONデータを取得
+      const data = await fetchJsonData(jsonDataUrl);
+
+      // flatpickrの初期化
+      const fp = flatpickr("#dateSelect", {
+        locale: 'ja',
+        dateFormat: "Y/m/d",
+        defaultDate: new Date(),
+        onChange: async function (selectedDates) {
+          updateOpeningHours(data, fp, campusSelect.value);
+        }
+      });
+
+      // 左右ボタンクリック時の処理
+      prevDateButton.addEventListener('click', () => {
+        fp.setDate(new Date(fp.selectedDates[0]).setDate(fp.selectedDates[0].getDate() - 1));
+        updateOpeningHours(data, fp, campusSelect.value);
+      });
+
+      nextDateButton.addEventListener('click', () => {
+        fp.setDate(new Date(fp.selectedDates[0]).setDate(fp.selectedDates[0].getDate() + 1));
+        updateOpeningHours(data, fp, campusSelect.value);
+      });
+
+      // 本日ボタンのクリックイベント
+      todayButton.addEventListener('click', () => {
+        fp.setDate(new Date());
+        updateOpeningHours(data, fp, campusSelect.value);
+      });
+
+      // キャンパスセレクトボックスの変更イベント
+      campusSelect.addEventListener('change', () => {
+        updateOpeningHours(data, fp, campusSelect.value);
+      });
+
+      // 初期表示
+      updateOpeningHours(data, fp, campusSelect.value);
+    };
+
+    // 営業時間情報表示を更新する関数
+    async function updateOpeningHours(data, fp, campus) {
+      const selectedDate = toJST(new Date(fp.selectedDates[0]));
+      displayOpeningHours(data, selectedDate, campus);
+    }
+
+    // 日付をJSTに変換する関数
+    function toJST(dateInfo) {
+      const options = { timeZone: 'Asia/Tokyo' };
+      const jpDate = dateInfo.toLocaleString('ja-JP', options).split(' ')[0];
+      const jpDate_list = jpDate.split('/');
+      const year = jpDate_list[0];
+      const month = jpDate_list[1].padStart(2, '0');
+      const day = jpDate_list[2].padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // JSONデータを取得する関数
+    async function fetchJsonData(url) {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('データを取得できませんでした。');
+      }
+      return await response.json();
+    }
+
+    // 選択された日付の営業時間を表示する関数
+    async function displayOpeningHours(data, selectedDate, campus) {
+      const openingHoursDiv = document.getElementById('openingHours');
+      openingHoursDiv.innerHTML = ''; // 初期化
+
+      // JSONデータから該当する日付のデータを取得
+      const selectedData = data[formatDate(selectedDate)];
+
+      const campusData = {
+        'all': [
+          { 'name': '大宮キャンパス', 'icon': 'fa-university', 'facilities': ['coop_plaza_self', 'coop_plaza_counter', 'dining_hall', 'shibaura_bakery', 'office', 'realtor'] },
+          { 'name': '豊洲キャンパス', 'icon': 'fa-building', 'facilities': ['shop_self', 'shop_counter', 'cafeteria'] }
+        ],
+        'omiya': [
+          { 'name': '大宮キャンパス', 'icon': 'fa-university', 'facilities': ['coop_plaza_self', 'coop_plaza_counter', 'dining_hall', 'shibaura_bakery', 'office', 'realtor'] }
+        ],
+        'toyosu': [
+          { 'name': '豊洲キャンパス', 'icon': 'fa-building', 'facilities': ['shop_self', 'shop_counter', 'cafeteria'] }
+        ]
+      };
+
+      const facilityIconMap = {
+        'shop_self': 'fa-cart-shopping',
+        'shop_counter': 'fa-cash-register',
+        'cafeteria': 'fa-mug-saucer',
+        'coop_plaza_self': 'fa-store',
+        'coop_plaza_counter': 'fa-user-tie',
+        'dining_hall': 'fa-utensils',
+        'shibaura_bakery': 'fa-bread-slice',
+        'office': 'fa-building',
+        'realtor': 'fa-house'
+      };
+
+      const facilityNameMap = {
+        'shop_self': 'ショップ セルフ',
+        'shop_counter': 'ショップ カウンター',
+        'cafeteria': 'カフェテリア',
+        'coop_plaza_self': '生協プラザ セルフ',
+        'coop_plaza_counter': '生協プラザ カウンター',
+        'dining_hall': '食堂',
+        'shibaura_bakery': '芝浦ベーカリー',
+        'office': '事務室',
+        'realtor': 'お部屋探し'
+      };
+
+      const weekdayMap = {
+        "Saturday": "土",
+        "Sunday": "日",
+        "Monday": "月",
+        "Tuesday": "火",
+        "Wednesday": "水",
+        "Thursday": "木",
+        "Friday": "金"
+      };
+
+      if (selectedData) {
+        const date = selectedDate.replace(/_/g, '/');
+        const weekday = weekdayMap[selectedData.week_day];
+        let html = `<h2 class="text-xl font-bold text-center col-span-full mb-4"><i class="far fa-calendar-alt"></i> ${date} (${weekday})</h2>`;
+
+        campusData[campus].forEach(campusItem => {
+          let campusHtml = `<h2 class="text-lg font-bold text-left col-span-full ml-2"><i class="fas ${campusItem.icon}"></i> ${campusItem.name}</h2>`;
+          let allClosed = true; // 全ての施設が休業かどうか
+
+          campusItem.facilities.forEach(facility => {
+            if (selectedData[facility] !== '休業') {
+              allClosed = false; // 少なくとも1つ以上の施設が営業している
+            }
+          });
+
+          if (allClosed) {
+            // 全ての施設が休業の場合
+            campusHtml += `<p class="text-center col-span-full text-red-500 font-bold">本日は休業です。</p>`;
+          } else {
+            campusItem.facilities.forEach(facility => {
+              const isOpen = selectedData[facility] !== '休業';
+              const time = isOpen ? selectedData[facility] : '休業';
+              const statusClass = isOpen ? 'bg-green-500 text-white rounded' : 'bg-red-500 text-white rounded';
+              const icon = facilityIconMap[facility]; 
+
+              campusHtml += `
+              <div class="bg-white p-4 rounded-lg shadow-md col-span-1">
+                <div class="flex items-center mb-2">
+                  <i class="fas ${icon} mr-2"></i>
+                  <h3 class="text-lg font-bold">${facilityNameMap[facility]}</h3>
+                </div>
+                <div class="flex items-center">
+                  <span class="ml-1 px-2.5 py-0.5 text-sm font-medium ${statusClass}">${time}</span>
+                </div>
+              </div>
+            `;
             });
+          }
 
-            try {
-                // JSONデータを取得
-                const data = await fetchJsonData(jsonDataUrl);
+          html += campusHtml;
+        });
 
-                // ページ読み込み時に初期データを表示する（例えば今日の日付）
-                const today = new Date()
-                const options = { timeZone: 'Asia/Tokyo' };
-                const jpToday = today.toLocaleString('ja-JP', options).split(' ')[0];
-                const jpToday_list = jpToday.split('/');
-                const year = jpToday_list[0];
-                const month = jpToday_list[1].padStart(2, '0');;
-                const day = jpToday_list[2].padStart(2, '0');;
-                const selectedDate = `${year}-${month}-${day}`
-                displayOpeningHours(data, selectedDate, openingHoursDiv);
-            } catch (error) {
-                console.error('エラー:', error);
-                openingHoursDiv.innerHTML = `<p>データを取得できませんでした。</p>`;
-            }
-        };
+        openingHoursDiv.innerHTML = html;
+      } else {
+        openingHoursDiv.innerHTML = `<p class="text-center col-span-full">${selectedDate.replace(/_/g, '/')} のデータはありません。</p>`;
+      }
+    }
 
-        // JSONデータを取得する関数
-        async function fetchJsonData(url) {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error('データを取得できませんでした。');
-            }
-            return await response.json();
-        }
 
-        // 選択された日付の営業時間を表示する関数
-        function displayOpeningHours(data, selectedDate, openingHoursDiv) {
-            const formattedDate = formatDate(selectedDate);
-            const selectedData = data[formattedDate];
-            const campusMap = {
-                'shop_self': { 'name': 'ショップ セルフ', 'campus': 'toyosu' },
-                'shop_counter': { 'name': 'ショップ カウンター', 'campus': 'toyosu' },
-                'cafeteria': { 'name': 'カフェテリア', 'campus': 'toyosu' },
-                'coop_plaza_self': { 'name': '生協プラザ セルフ', 'campus': 'omiya' },
-                'coop_plaza_counter': { 'name': '生協プラザ カウンター', 'campus': 'omiya' },
-                'dining_hall': { 'name': '食堂', 'campus': 'omiya' },
-                'shibaura_bakery': { 'name': '芝浦ベーカリー', 'campus': 'omiya' },
-                'office': { 'name': '事務室', 'campus': 'omiya' },
-                'realtor': { 'name': 'お部屋探し', 'campus': 'omiya' }
-            };
-            const weekdayMap = {
-                "Saturday": "土",
-                "Sunday": "日",
-                "Monday": "月",
-                "Tuesday": "火",
-                "Wednesday": "水",
-                "Thursday": "木",
-                "Friday": "金"
-            };
-
-            if (selectedData) {
-                let html = `<h3>${selectedDate.replace(/-/g, '/')} (${weekdayMap[selectedData.week_day]}) の営業時間</h3>`;
-
-                // キャンパスごとに情報を表示
-                html += '<div class="col-md-12">'; // col-md-6で横に並べる
-                ['omiya', 'toyosu'].forEach(campus => {
-                    let campusData = '';
-                    for (const key in selectedData) {
-                        if (key !== 'week_day' && campusMap[key] && campusMap[key].campus === campus) {
-                            campusData += `<tr><td>${campusMap[key].name}</td><td>${selectedData[key]}</td></tr>`;
-                        }
-                    }
-                    if (campusData !== '') {
-                        html += `<div class="campus-table"><h4>${campus === 'toyosu' ? '豊洲キャンパス' : '大宮キャンパス'}</h4>`;
-                        html += '<table class="table">';
-                        html += '<thead><tr><th class="col-md-9">店舗/施設</th><th class="col-md-3">営業時間</th></tr></thead>';
-                        html += '<tbody>';
-                        html += campusData;
-                        html += '</tbody></table></div>';
-                    }
-                });
-                html += '</div>'; // col-md-6の閉じタグ
-
-                openingHoursDiv.innerHTML = html;
-            } else {
-                openingHoursDiv.innerHTML = `<p>${selectedDate.replace(/_/g, '/')} のデータはありません。</p>`;
-            }
-        }
-
-        // 日付をJSONデータのフォーマットに合わせる関数
-        function formatDate(dateString) {
-            const [year, month, day] = dateString.split('-');
-            return `${year}_${month}_${day}`;
-        }
-    </script>
+    // 日付をJSONデータのフォーマットに合わせる関数
+    function formatDate(dateString) {
+      const [year, month, day] = dateString.split('-');
+      return `${year}_${month}_${day}`;
+    }
+  </script>
 </body>
 
 </html>
