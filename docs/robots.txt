@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://{ユーザー名}.github.io/{リポジトリ名}/sitemap.xml
+Sitemap: https://kotetsu0000.github.io/SIT_Coop_data/sitemap.xml
