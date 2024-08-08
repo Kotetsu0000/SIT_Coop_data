@@ -1,0 +1,19 @@
+{
+    "name": "芝浦工業大学 生協 営業時間情報",
+    "short_name": "生協営業時間",
+    "start_url": "/",
+    "display": "standalone",
+    "icons": [
+      {
+        "src": "homeicon.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "homeicon.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
+  
