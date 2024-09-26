@@ -196,7 +196,7 @@ def data_extract(pdf_path:str):
             day_dict[column_name] = time
         save_dict[key] = day_dict
 
-    pattern = r'\d{4}_\d'
+    pattern = r'\d{4}_\d{1,2}'
     dict_name = re.search(pattern, pdf_path)[0] + '.json'
     save_json(save_dict, DICT_FOLDER + dict_name)
     return save_dict
