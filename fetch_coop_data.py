@@ -1,5 +1,6 @@
 import json
 import pathlib
+import os
 import re
 import unicodedata
 
@@ -41,7 +42,7 @@ JAP2ENG = {
 }
 
 pattern_dict = {
-    'date_text': r"\d{1,2}月\d{1,2}日\([日月火水木金土]\)",
+    'date_text': r"(1[0-2]|[1-9])月\d{1,2}日\([日月火水木金土]\)",
     'time_text': r"(?:\d{1,2}[:]\d{2}-\d{1,2}[:]\d{2}|休業)"
 }
 
@@ -138,68 +139,102 @@ def date_str_proc(date_str:str) -> str:
 
 def data_extract(pdf_path:str):
     DICT_FOLDER = './data/'
-    reader = PdfReader(pdf_path)
-    pages = reader.pages[0]
-    current_date = None
-    day_info = {}
-    year = pdf_path.split('/')[-1].split('_')[0]
-
-    for i in pages.extract_text().split('\n'):
-        text = convert_to_halfwidth(i).replace(' ', '')
-        date_text = re.findall(pattern_dict['date_text'], text)
-        if len(date_text) == 2:# 通常の場合
-            proc_date = date_str_proc(date_text[0])
-            current_date = year + '_' + proc_date[0]
-            day_info[current_date] = [proc_date[1]]
-            time_list = re.findall(pattern_dict['time_text'], text)
-            if len(time_list) == 1:# 学生大会の日対応
-                day_info[current_date] += ['休業' for _ in range(9)]
-            else:
-                day_info[current_date] += re.findall(pattern_dict['time_text'], text)
-            current_date = None
-        if len(date_text) == 4:
-            time_list = re.findall(pattern_dict['time_text'], text)
-
-            proc_date = date_str_proc(date_text[0])
-            current_date = year + '_' + proc_date[0]
-            day_info_list = [proc_date[1]]# Weekday
-            day_info[current_date] = day_info_list + time_list[:9]
-
-            proc_date = date_str_proc(date_text[2])
-            current_date = year + '_' + proc_date[0]
-            day_info_list = [proc_date[1]]# Weekday
-            day_info[current_date] = day_info_list + time_list[9:]            
-        else:#特殊状態
-            if current_date is None:
-                if len(date_text) == 1:# 日付(最初)
-                    proc_date = date_str_proc(date_text[0])
-                    current_date = year + '_' + proc_date[0]
-                    day_info_list = [proc_date[1]]
-                    day_info_list += re.findall(pattern_dict['time_text'], text)
-                else:
-                    Exception("Error")
-            else:
-                if len(date_text) == 0:# 日付の途中
-                    day_info_list += re.findall(pattern_dict['time_text'], text)
-                elif len(date_text) == 1 and current_date == date_text[0]:# 日付の最後
-                    day_info_list += re.findall(pattern_dict['time_text'], text)
-                    day_info[current_date] = day_info_list
-                    current_date = None
-                    del day_info_list
-                else:
-                    Exception("Error")
-
-    save_dict = {}
-    for key, value in day_info.items():
-        day_dict = {}
-        for column_name, time in zip(TIME_COLMUN_NAME, value):
-            day_dict[column_name] = time
-        save_dict[key] = day_dict
+    save_dict = date_dict_proc(text_extract(pdf_path))
 
     pattern = r'\d{4}_\d{1,2}'
     dict_name = re.search(pattern, pdf_path)[0] + '.json'
     save_json(save_dict, DICT_FOLDER + dict_name)
     return save_dict
+
+def date_dict_proc(date_dict:dict):
+    return_dict = {}
+    for key, value in date_dict.items():
+        if len(value["time"]) != 9:
+            year, month, day = key.split('_')
+            year, month, day = int(year), int(month), int(day)
+
+            if month == 6:# 学生大会?
+                """
+                対応する日付
+                - 2024年度6月25日
+                """
+                date_dict[key]["time"] = ['休業' for _ in range(9)]
+            elif month == 7 and day == 6:# 体験授業特別営業?
+                """
+                対応する日付
+                - 2024年度7月6日
+                """
+                date_dict[key]["time"].insert(1, '休業')# 6月PDF参照
+            elif (month == 7 and day > 20) or (month == 8 and day < 15):#大宮オープンキャンパス?
+                """
+                対応する日付
+                - 2024年度8月3日
+                - 2024年度8月4日
+                """
+                date_dict[key]["time"].insert(4, '不明')
+            elif month == 8 and day > 15: # 豊洲オープンキャンパス?
+                """
+                対応する日付
+                - 2024年度8月24日
+                - 2024年度8月25日
+                """
+                date_dict[key]["time"].insert(1, '不明')
+            elif month == 10 and day > 25: # 芝浦祭期間?
+                """
+                対応する日付
+                - 2024年度10月31日
+                """
+                date_dict[key]["time"] = ['休業' for _ in range(9)]
+
+        if len(value["time"]) == 9:# 修正できたもの
+            return_dict[key] = {}
+            for colmun in TIME_COLMUN_NAME:
+                if colmun == 'week_day':
+                    return_dict[key][colmun] = date_dict[key][colmun]
+                else:
+                    return_dict[key][colmun] = date_dict[key]["time"].pop(0)
+        else:
+            print(f'{year}年{month}月{day}日')
+            print(key, value["time"], len(value["time"]))
+            print(f'-> {value["text"]}')
+        
+    return return_dict
+
+def text_extract(pdf_path:str) -> dict:
+    reader = PdfReader(pdf_path)
+    pages = reader.pages[0]
+    year = pdf_path.split('/')[-1].split('_')[0]
+
+    text = pages.extract_text().replace('\n', '').replace(' ', '')
+    text = convert_to_halfwidth(text)
+
+    finditer = list(re.finditer(pattern_dict['date_text'], text))
+
+    current_date = ''
+    date_num = 0
+    text_dict = {}
+    for i in finditer:
+        group_text = i.group()
+        if current_date != group_text:#一つ目の日付
+            current_date = group_text#日付を更新
+            date_num += 1 #日付の数をカウント
+            text_start = i.end()#日付の間のテキストの開始位置
+            continue
+        else:
+            text_end = i.start()#日付の間のテキストの終了位置
+            date, week = date_str_proc(group_text)
+
+            aa = re.findall(pattern_dict['time_text'], text[text_start:text_end])
+            text_dict[f'{year}_{date}'] = {}
+            text_dict[f'{year}_{date}']['week_day'] = week
+            text_dict[f'{year}_{date}']['text'] = text[text_start:text_end]
+            text_dict[f'{year}_{date}']['time'] = aa
+    return text_dict
+
+def check_all_data():
+    pdf_paths = [f'pdf/{i}' for i in os.listdir('pdf') if i.endswith('.pdf')]
+    for pdf_path in pdf_paths:
+        data_extract(pdf_path)
 
 if __name__ == '__main__':
     all_data = {}
@@ -207,3 +242,4 @@ if __name__ == '__main__':
         all_data.update(data_extract(pdf_path))
     all_data = dict(sorted(all_data.items()))
     save_json(all_data, './data/coop_data.json')
+    
