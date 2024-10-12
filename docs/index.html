@@ -218,10 +218,22 @@
             campusHtml += `<p class="text-center col-span-full text-red-500 font-bold">本日は休業です。</p>`;
           } else {
             campusItem.facilities.forEach(facility => {
-              const isOpen = selectedData[facility] !== '休業';
-              const time = isOpen ? selectedData[facility] : '休業';
-              const statusClass = isOpen ? 'bg-green-500 text-white rounded' : 'bg-red-500 text-white rounded';
-              const icon = facilityIconMap[facility]; 
+              let time, statusClass, icon;
+              if (selectedData[facility] == '休業') {
+                time = '休業';
+                statusClass = 'bg-red-500 text-white rounded';
+                icon = facilityIconMap[facility];
+              }
+              else if (selectedData[facility] == '不明') {
+                time = '不明';
+                statusClass = 'bg-purple-500 text-white rounded';
+                icon = facilityIconMap[facility];
+              }
+              else {
+                time = selectedData[facility];
+                statusClass = 'bg-green-500 text-white rounded';
+                icon = facilityIconMap[facility];
+              } 
 
               campusHtml += `
               <div class="bg-white p-4 rounded-lg shadow-md col-span-1">
