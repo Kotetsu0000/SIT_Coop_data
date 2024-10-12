@@ -201,7 +201,7 @@
         "dining_hall": "8:15-19:20",
         "shibaura_bakery": "11:00-15:30",
         "office": "10:00-16:00",
-        "realtor": "休業"
+        "realtor": "10:30-17:30"
     },
     "2024_10_15": {
         "week_day": "Tuesday",
@@ -285,7 +285,7 @@
         "dining_hall": "8:15-19:20",
         "shibaura_bakery": "11:00-15:30",
         "office": "10:00-16:00",
-        "realtor": "休業"
+        "realtor": "10:30-17:30"
     },
     "2024_10_22": {
         "week_day": "Tuesday",
@@ -417,7 +417,7 @@
         "dining_hall": "休業",
         "shibaura_bakery": "休業",
         "office": "休業",
-        "realtor": "10:30-17:30"
+        "realtor": "休業"
     },
     "2024_11_02": {
         "week_day": "Saturday",
@@ -429,7 +429,7 @@
         "dining_hall": "休業",
         "shibaura_bakery": "休業",
         "office": "休業",
-        "realtor": "10:30-17:30"
+        "realtor": "休業"
     },
     "2024_11_03": {
         "week_day": "Sunday",
