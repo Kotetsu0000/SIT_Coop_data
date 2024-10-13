@@ -48,7 +48,7 @@ pattern_dict = {
 }
 
 WEBHOOK_URL = os.environ['WEBHOOK_URL']
-bot = DiscordWebhook(url=WEBHOOK_URL)
+bot = DiscordWebhook(webhook_url=WEBHOOK_URL)
 
 def save_pdf(url:str, path:str) -> None:
     """PDFファイルを保存する関数
