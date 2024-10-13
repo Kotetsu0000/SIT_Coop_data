@@ -5,6 +5,7 @@ import re
 import unicodedata
 
 from bs4 import BeautifulSoup
+from discord_webhook import DiscordWebhook
 from pypdf import PdfReader
 import requests
 
@@ -45,6 +46,9 @@ pattern_dict = {
     'date_text': r"(1[0-2]|[1-9])月\d{1,2}日\([日月火水木金土]\)",
     'time_text': r"(?:\d{1,2}[:]\d{2}-\d{1,2}[:]\d{2}|休業)"
 }
+
+WEBHOOK_URL = os.environ['WEBHOOK_URL']
+bot = DiscordWebhook(url=WEBHOOK_URL)
 
 def save_pdf(url:str, path:str) -> None:
     """PDFファイルを保存する関数
@@ -197,6 +201,8 @@ def date_dict_proc(date_dict:dict):
             print(f'{year}年{month}月{day}日')
             print(key, value["time"], len(value["time"]))
             print(f'-> {value["text"]}')
+            send_text = f'{year}年{month}月{day}日\n{key} {value["week_day"]}\n{value["text"]}\n{value["time"]}'
+            bot.send(send_text)
         
     return return_dict
 

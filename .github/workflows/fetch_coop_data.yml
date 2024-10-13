@@ -23,9 +23,11 @@ jobs:
       run: python -m pip install --upgrade pip  # pipをアップグレード
 
     - name: Install dependencies
-      run: pip install bs4 pypdf requests # 依存関係をインストール
+      run: pip install bs4 pypdf requests git+https://github.com/Kotetsu0000/discord_webhook.git # 依存関係をインストール
 
     - name: Fetch Coop Data
+      env:
+        WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
       run: python fetch_coop_data.py  # データを取得
 
     - name: Commit and push if changes
