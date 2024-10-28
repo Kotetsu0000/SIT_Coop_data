@@ -47,9 +47,6 @@ pattern_dict = {
     'time_text': r"(?:\d{1,2}[:]\d{2}-\d{1,2}[:]\d{2}|休業)"
 }
 
-WEBHOOK_URL = os.environ['WEBHOOK_URL']
-bot = DiscordWebhook(webhook_url=WEBHOOK_URL)
-
 def save_pdf(url:str, path:str) -> None:
     """PDFファイルを保存する関数
     
@@ -183,10 +180,11 @@ def date_dict_proc(date_dict:dict):
                 - 2024年度8月25日
                 """
                 date_dict[key]["time"].insert(1, '不明')
-            elif month == 10 and day > 25: # 芝浦祭期間?
+            elif (month == 10 and day > 25) or (month==11 and day < 9): # 芝浦祭期間?
                 """
                 対応する日付
                 - 2024年度10月31日
+                - 2024年度11月2日
                 """
                 date_dict[key]["time"] = ['休業' for _ in range(9)]
 
@@ -243,6 +241,8 @@ def check_all_data():
         data_extract(pdf_path)
 
 if __name__ == '__main__':
+    WEBHOOK_URL = os.environ['WEBHOOK_URL']
+    bot = DiscordWebhook(webhook_url=WEBHOOK_URL)
     all_data = {}
     for pdf_path in download_coopPDF():
         all_data.update(data_extract(pdf_path))
