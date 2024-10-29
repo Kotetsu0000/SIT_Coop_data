@@ -180,7 +180,7 @@ def date_dict_proc(date_dict:dict):
                 - 2024年度8月25日
                 """
                 date_dict[key]["time"].insert(1, '不明')
-            elif (month == 10 and day > 25) or (month==11 and day < 9): # 芝浦祭期間?
+            elif (month == 10 and day > 30) or (month==11 and day < 7): # 芝浦祭期間?
                 """
                 対応する日付
                 - 2024年度10月31日
