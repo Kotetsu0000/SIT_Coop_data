@@ -13,6 +13,12 @@ CURRENT_ERROR_DATE_LIST = [
     '2024_08_25',
     '2024_10_31',
     '2024_11_02',
+    '2025_01_18',
+    '2025_01_19',
+    '2025_02_01',
+    '2025_02_02',
+    '2025_02_03',
+    '2025_02_04',
 ]
 
 def load_json(json_path:str) -> dict:
@@ -51,6 +57,7 @@ def extract_nonexistent_date() -> list:
 def test():
     pdf_paths = [f'pdf/{i}' for i in os.listdir('pdf') if i.endswith('.pdf')]
     for pdf_path in pdf_paths:
+        print(f'PDF path: {pdf_path}')
         date_dict = text_extract(pdf_path)
         extract_error_date(date_dict)
     extract_nonexistent_date()

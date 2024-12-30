@@ -257,8 +257,11 @@ def check_all_data():
         data_extract(pdf_path)
 
 if __name__ == '__main__':
-    WEBHOOK_URL = os.environ['WEBHOOK_URL']
-    bot = DiscordWebhook(webhook_url=WEBHOOK_URL)
+    try:
+        WEBHOOK_URL = os.environ['WEBHOOK_URL']
+        bot = DiscordWebhook(webhook_url=WEBHOOK_URL)
+    except:
+        print('WEBHOOK_URL is not defined.')
     all_data = {}
     for pdf_path in download_coopPDF():
         all_data.update(data_extract(pdf_path))
