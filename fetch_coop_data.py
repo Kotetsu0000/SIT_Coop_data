@@ -47,6 +47,29 @@ pattern_dict = {
     'time_text': r"(?:\d{1,2}[:]\d{2}-\d{1,2}[:]\d{2}|休業)"
 }
 
+# ファイルのソートに使用する。月のマッピング
+month_mapping = {
+    "1月": 1, "2月": 2, "3月": 3, "4月": 4, "5月": 5, "6月": 6,
+    "7月": 7, "8月": 8, "9月": 9, "10月": 10, "11月": 11, "12月": 12
+}
+
+def extract_date(file_name:str) -> tuple:
+    """ファイル名から年と月を抽出する関数
+
+    Args:
+        file_name (str): ファイル名
+
+    Returns:
+        year (int): 年
+        month (int): 月
+    """
+    match = re.search(r'(\d{4})_(\d{1,2}月)', file_name)
+    if match:
+        year = int(match.group(1))
+        month = month_mapping[match.group(2)]
+        return year, month
+    return 0, 0  # 日付がない場合のデフォルト値
+
 def save_pdf(url:str, path:str) -> None:
     """PDFファイルを保存する関数
     
@@ -121,22 +144,32 @@ def download_coopPDF() -> list:
             if not file_exists(pdf_path):
                 save_pdf(pdf_url, pdf_path)
             save_pdf_path_list.append(pdf_path)
+    save_pdf_path_list = sorted(save_pdf_path_list, key=extract_date)
     return save_pdf_path_list
 
-def date_str_proc(date_str:str) -> str:
+def date_str_proc(date_str:str, year:str, last_month_flag:bool) -> tuple:
     """日付の文字列を整形する関数
     
     Args:
         date_str (str): 整形する日付の文字列
+        year (str): 年
+        last_month_flag (bool): 12月かどうか
 
     Returns:
         str: 整形後の日付の文字列
+        str: 曜日の文字列
+        bool: 12月から1月になる場合
     """
     month_day = re.findall(r'\d{1,2}', date_str)
     month = month_day[0]
     day = month_day[1]
     week = re.findall(r'\([日月火水木金土]\)', date_str)[0].replace('(', '').replace(')', '')
-    return f'{int(month):02d}_{int(day):02d}', JAP2ENG[week]
+    if last_month_flag and int(month) == 1:# ファイルが12月のもので1月になる場合
+        return f'{int(year)+1}_{int(month):02d}_{int(day):02d}', JAP2ENG[week], True
+    elif int(month) == 12:# ファイルが12月のものの場合
+        return f'{int(year)}_{int(month):02d}_{int(day):02d}', JAP2ENG[week], True
+    else:
+        return f'{int(year)}_{int(month):02d}_{int(day):02d}', JAP2ENG[week], False
 
 def data_extract(pdf_path:str):
     DICT_FOLDER = './data/'
@@ -233,6 +266,7 @@ def text_extract(pdf_path:str) -> dict:
     current_date = ''
     date_num = 0
     text_dict = {}
+    last_month_flag = False
     for i in finditer:
         group_text = i.group()
         if current_date != group_text:#一つ目の日付
@@ -242,13 +276,13 @@ def text_extract(pdf_path:str) -> dict:
             continue
         else:
             text_end = i.start()#日付の間のテキストの終了位置
-            date, week = date_str_proc(group_text)
+            key, week, last_month_flag = date_str_proc(group_text, year, last_month_flag)
 
             aa = re.findall(pattern_dict['time_text'], text[text_start:text_end])
-            text_dict[f'{year}_{date}'] = {}
-            text_dict[f'{year}_{date}']['week_day'] = week
-            text_dict[f'{year}_{date}']['text'] = text[text_start:text_end]
-            text_dict[f'{year}_{date}']['time'] = aa
+            text_dict[key] = {}
+            text_dict[key]['week_day'] = week
+            text_dict[key]['text'] = text[text_start:text_end]
+            text_dict[key]['time'] = aa
     return text_dict
 
 def check_all_data():
