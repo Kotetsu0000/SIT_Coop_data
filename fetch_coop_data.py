@@ -157,34 +157,34 @@ def date_dict_proc(date_dict:dict):
             if month == 6:# 学生大会?
                 """
                 対応する日付
-                - 2024年度6月25日
+                - 2024年6月25日
                 """
                 date_dict[key]["time"] = ['休業' for _ in range(9)]
             elif month == 7 and day == 6:# 体験授業特別営業?
                 """
                 対応する日付
-                - 2024年度7月6日
+                - 2024年7月6日
                 """
                 date_dict[key]["time"].insert(1, '休業')# 6月PDF参照
             elif (month == 7 and day > 20) or (month == 8 and day < 15):#大宮オープンキャンパス?
                 """
                 対応する日付
-                - 2024年度8月3日
-                - 2024年度8月4日
+                - 2024年8月3日
+                - 2024年8月4日
                 """
                 date_dict[key]["time"].insert(4, '不明')
             elif month == 8 and day > 15: # 豊洲オープンキャンパス?
                 """
                 対応する日付
-                - 2024年度8月24日
-                - 2024年度8月25日
+                - 2024年8月24日
+                - 2024年8月25日
                 """
                 date_dict[key]["time"].insert(1, '不明')
             elif (month == 10 and day > 30) or (month==11 and day < 7): # 芝浦祭期間?
                 """
                 対応する日付
-                - 2024年度10月31日
-                - 2024年度11月2日
+                - 2024年10月31日
+                - 2024年11月2日
                 """
                 date_dict[key]["time"] = ['休業' for _ in range(9)]
 
