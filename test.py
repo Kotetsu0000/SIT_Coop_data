@@ -19,6 +19,7 @@ CURRENT_ERROR_DATE_LIST = [
     '2025_02_02',
     '2025_02_03',
     '2025_02_04',
+    '2025_02_21'
 ]
 
 def load_json(json_path:str) -> dict:

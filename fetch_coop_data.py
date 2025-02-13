@@ -203,6 +203,12 @@ def date_dict_proc(date_dict:dict):
                 - 2025年2月4日
                 """
                 date_dict[key]["time"] = ['休業' for _ in range(9)]
+            elif month == 2 and day > 20:# 入試期間(後期日程)
+                """
+                対応する日付
+                - 2025年2月21日
+                """
+                date_dict[key]["time"] = ['休業' for _ in range(9)]
             elif month == 6:# 学生大会?
                 """
                 対応する日付
