@@ -28,6 +28,14 @@ CURRENT_ERROR_DATE_LIST = [
     '2025_03_08',
     '2025_03_09',
     '2025_03_10',
+    '2025_04_30',
+    '2025_05_01',
+    '2025_05_02',
+    '2025_05_19',
+    '2025_06_19',
+    '2025_08_02',
+    '2025_08_03',
+    "2025_10_03",
 ]
 
 def load_json(json_path:str) -> dict:
@@ -38,7 +46,7 @@ def extract_error_date(date_dict:dict) -> dict:
     for key, value in date_dict.items():
         if len(value["time"]) != 9:
             if key not in CURRENT_ERROR_DATE_LIST:
-                raise Exception(f'Error date: {key}')
+                raise Exception(f'Error date: {key}, Value: {value}')
             year, month, day = key.split('_')
             year, month, day = int(year), int(month), int(day)
     print('All date is correct.')

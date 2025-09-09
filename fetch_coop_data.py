@@ -226,6 +226,12 @@ def date_dict_proc(date_dict:dict):
                 - 2025年3月10日
                 """
                 date_dict[key]["time"].insert(5, '休業')
+            elif month == 4 and day >= 30:# ゴールデンウィーク
+                """
+                対応する日付
+                - 2025年4月30日
+                """
+                date_dict[key]["time"] = ['休業' for _ in range(9)] 
             elif month == 6:# 学生大会?
                 """
                 対応する日付
