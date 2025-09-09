@@ -9,6 +9,10 @@ from discord_webhook import DiscordWebhook
 from pypdf import PdfReader
 import requests
 
+class DummyDiscordWebhook:
+    def send(self, text:str):
+        print(text)
+
 TIME_COLMUN_NAME = [
     'week_day',#'曜日',
     'shop_self',#'ショップ セルフ',
@@ -314,6 +318,7 @@ if __name__ == '__main__':
         WEBHOOK_URL = os.environ['WEBHOOK_URL']
         bot = DiscordWebhook(webhook_url=WEBHOOK_URL)
     except:
+        bot = DummyDiscordWebhook()
         print('WEBHOOK_URL is not defined.')
     all_data = {}
     for pdf_path in download_coopPDF():
