@@ -395,6 +395,18 @@
         "office": "10:00-16:00",
         "realtor": "10:30-17:30"
     },
+    "2025_10_03": {
+        "week_day": "Friday",
+        "shop_self": "8:30-19:00",
+        "shop_counter": "10:20-17:20",
+        "cafeteria": "11:30-14:00",
+        "coop_plaza_self": "8:30-17:30",
+        "coop_plaza_counter": "10:00-17:30",
+        "dining_hall": "8:15-19:20",
+        "shibaura_bakery": "11:00-14:00",
+        "office": "10:00-16:00",
+        "realtor": "10:30-17:30"
+    },
     "2025_10_04": {
         "week_day": "Saturday",
         "shop_self": "休業",

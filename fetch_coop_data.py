@@ -288,7 +288,7 @@ def text_extract(pdf_path:str) -> dict:
     year = pdf_path.split('/')[-1].split('_')[0]
 
     text = pages.extract_text().replace('\n', '').replace(' ', '')
-    text = convert_to_halfwidth(text)
+    text = convert_to_halfwidth(text).replace('::', ':')
 
     finditer = list(re.finditer(pattern_dict['date_text'], text))
 
