@@ -191,11 +191,12 @@ def date_dict_proc(date_dict:dict):
             year, month, day = key.split('_')
             year, month, day = int(year), int(month), int(day)
 
-            if month == 1 and day > 17 and day < 20:# 共通テスト期間
+            if month == 1 and day > 16 and day < 20:# 共通テスト期間
                 """
                 対応する日付
                 - 2025年1月18日
                 - 2025年1月19日
+                - 2026年1月17日
                 """
                 date_dict[key]["time"] = ['休業' for _ in range(9)]
             elif month == 2 and day < 5:# 入試期間(前期日程)
