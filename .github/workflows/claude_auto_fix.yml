@@ -1,0 +1,96 @@
+name: Claude Auto Fix
+
+# データ抽出エラーのIssueをClaude Code(Sonnet)が修正し、Pull Requestを作成する。
+# 起動経路:
+#   1. fetch_coop_data.yml が検証失敗時に workflow_dispatch で起動(自動)
+#   2. Issueに extraction-error ラベルを手動で付けた場合(人間によるリトライ用)
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: '修正対象のIssue番号'
+        required: true
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  auto-fix:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.label.name == 'extraction-error'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resolve issue number
+        id: issue
+        env:
+          INPUT_NUMBER: ${{ inputs.issue_number }}
+          EVENT_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          NUMBER="${INPUT_NUMBER:-$EVENT_NUMBER}"
+          echo "number=$NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Fix extraction errors with Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: |
+            --model claude-sonnet-4-6
+            --max-turns 50
+            --allowedTools "Edit,Write,Read,Glob,Grep,Bash(uv:*),Bash(git:*),Bash(gh:*),Bash(ls:*),Bash(cat:*)"
+          prompt: |
+            あなたは芝浦工業大学生協の営業時間データ抽出エラーを修正します。
+            対象Issue: #${{ steps.issue.outputs.number }} (リポジトリ: ${{ github.repository }})
+
+            これは決まりきった修正フローです。以下の手順に正確に従ってください。
+
+            1. `gh issue view ${{ steps.issue.outputs.number }}` でIssue本文を読む。
+            2. `errors/` 内の `YYYY_MM_DD.json` アーティファクトを全て読む。
+               - `raw_cells` がPDFテーブルのセル内容、`extracted_values` の `null` が
+                 解決できなかったカラム、`columns` がカラム名の対応。
+            3. 必要であれば該当PDF(アーティファクトの `pdf` のパス)をReadツールで
+               直接確認し、該当日付の実際の営業状況を判断する。
+            4. 修正を `overrides.json` に追記する(コード変更はしない):
+               - 全店休業の日: `{"action": "close_all", "note": "理由"}`
+               - 特定セルのみ補完: `{"action": "cells", "cells": {"カラム名": "値"}, "note": "理由"}`
+               - 値は `H:MM-H:MM` 形式・`休業`・`不明` のいずれか。
+                 PDFからも判断できない場合は `不明` を使い、noteに理由を書く。
+               - `cells` は抽出が解決できなかった(null の)カラムだけを補完する。
+                 抽出済みの値は上書きされないので安心して指定してよい。
+            5. エラーが「日付がどのPDFにも掲載されていない」ことによる場合
+               (validation_report.json の missing_dates にあり errors/ にアーティファクトが
+               無い場合)は、`known_gaps.json` に日付と理由を追加する。
+            6. `uv run python fetch_coop_data.py --local` でデータを再生成する。
+            7. `uv run python test.py` を実行し、成功する(exit 0)ことを確認する。
+               失敗する場合は手順4-6を見直す。
+            8. ブランチ `claude-fix/issue-${{ steps.issue.outputs.number }}` を作成し、
+               変更(overrides.json / known_gaps.json / data/ / errors/)をコミットして
+               プッシュする。コミット前に `git status` で意図しない変更が
+               含まれていないことを確認する。
+            9. `gh pr create` で main 向けのPull Requestを作成する。
+               本文に修正内容の説明と `Fixes #${{ steps.issue.outputs.number }}` を含める。
+
+            禁止事項:
+            - `fetch_coop_data.py` や `test.py` などのコードは変更しない
+              (データ修正は overrides.json / known_gaps.json で完結させる)
+            - main に直接プッシュしない
+            - overrides.json の既存エントリを削除・変更しない

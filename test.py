@@ -1,107 +1,169 @@
-from datetime import datetime, timedelta
+"""データの完全性チェック
+
+ハードコードされた日付リストを使わず、生成済みデータだけを検証する。
+
+検証項目:
+    1. 月次完全性: 月次ファイル(data/YYYY_M.json)が存在する月の全日付が、
+       いずれかの月次ファイルに存在すること(月境界の日付は隣月のPDFが
+       カバーすることがあるため、全月次ファイルの結合に対して検証する)。
+       どのPDFにも掲載されない日付(年末年始など)は known_gaps.json に
+       理由付きで記録することで許容される。
+    2. スキーマ: 全エントリが10カラムを過不足なく持ち、値が正規の形式であること
+    3. 曜日整合: week_day が日付から計算した実際の曜日と一致すること
+    4. 結合整合: 月次ファイルの全日付が coop_data.json に存在し、
+       coop_data.json に月次ファイル由来でない日付が無いこと
+    5. 抽出エラーの不在: errors/ に未解決の抽出エラー(YYYY_MM_DD.json)が
+       残っていないこと(隣月PDFのスピルオーバーで日付がカバーされていても、
+       抽出失敗は修正されるべきものとして検出する)
+
+失敗時は全違反を列挙して errors/validation_report.json に書き出し、exit code 1 で終了する。
+成功時は validation_report.json を削除して exit code 0 で終了する。
+
+使い方:
+    python test.py
+"""
+import calendar
 import json
-import os
+import pathlib
+import re
+import sys
+from datetime import datetime
 
-from fetch_coop_data import text_extract
+DATA_DIR = pathlib.Path('data')
+ERROR_DIR = pathlib.Path('errors')
+REPORT_FILE = ERROR_DIR / 'validation_report.json'
+KNOWN_GAPS_FILE = pathlib.Path('known_gaps.json')
 
-CURRENT_ERROR_DATE_LIST = [
-    '2024_06_25',
-    '2024_07_06',
-    '2024_08_03',
-    '2024_08_04',
-    '2024_08_24',
-    '2024_08_25',
-    '2024_10_31',
-    '2024_11_02',
-    '2025_01_18',
-    '2025_01_19',
-    '2025_02_01',
-    '2025_02_02',
-    '2025_02_03',
-    '2025_02_04',
-    '2025_02_21',
-    '2025_03_03',
-    '2025_03_04',
-    '2025_03_05',
-    '2025_03_06',
-    '2025_03_07',
-    '2025_03_08',
-    '2025_03_09',
-    '2025_03_10',
-    '2025_04_30',
-    '2025_05_01',
-    '2025_05_02',
-    '2025_05_19',
-    '2025_06_19',
-    '2025_08_02',
-    '2025_08_03',
-    "2025_10_03",
-    "2025_11_01",
-    "2025_12_24",
-    "2026_01_17",
-    "2026_01_18",
-    "2026_02_01",
-    "2026_02_02",
-    "2026_02_03",
-    "2026_02_04",
-    "2026_02_21",
-    "2026_04_02",
-    "2026_04_09",
-    "2026_04_10",
-    "2026_04_13",
-    "2026_05_03",
-    "2026_05_04",
-    "2026_05_05",
-    "2026_05_06",
-    "2026_05_07",
-    "2026_05_15",
-    "2026_05_16",
-    "2026_05_17",
-    "2026_05_18",
-    "2026_06_06",
+COLUMNS = [
+    'week_day', 'shop_self', 'shop_counter', 'cafeteria', 'coop_plaza_self',
+    'coop_plaza_counter', 'dining_hall', 'shibaura_bakery', 'office', 'realtor',
 ]
+WEEK_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+TIME_RANGE = r'\d{1,2}:\d{2}-\d{1,2}:\d{2}'
+VALUE_RE = re.compile(rf'^(休業|不明|24時間|{TIME_RANGE}(/{TIME_RANGE})*)$')
+DATE_KEY_RE = re.compile(r'^\d{4}_\d{2}_\d{2}$')
+MONTH_FILE_RE = re.compile(r'^(\d{4})_(\d{1,2})\.json$')
 
-def load_json(json_path:str) -> dict:
-    with open(json_path, 'r') as f:
+
+def load_json(path):
+    with open(path, encoding='UTF-8') as f:
         return json.load(f)
 
-def extract_error_date(date_dict:dict) -> dict:
-    for key, value in date_dict.items():
-        if len(value["time"]) != 9:
-            if key not in CURRENT_ERROR_DATE_LIST:
-                raise Exception(f'Error date: {key}, Value: {value}')
-            year, month, day = key.split('_')
-            year, month, day = int(year), int(month), int(day)
-    print('All date is correct.')
 
-def extract_nonexistent_date() -> list:
-    '''JSONに存在しない日付を抽出する
+def check_entry(file_name: str, key: str, entry: dict, report: dict) -> None:
+    """1日付分のエントリのスキーマと曜日整合を検証する。"""
+    if not DATE_KEY_RE.match(key):
+        report['schema_violations'].append({
+            'file': file_name, 'date': key, 'problem': '日付キーの形式が不正',
+        })
+        return
+    if not isinstance(entry, dict) or sorted(entry.keys()) != sorted(COLUMNS):
+        report['schema_violations'].append({
+            'file': file_name, 'date': key,
+            'problem': f'カラム不一致: {sorted(entry.keys()) if isinstance(entry, dict) else type(entry).__name__}',
+        })
+        return
+    actual_week = WEEK_DAYS[datetime.strptime(key, '%Y_%m_%d').weekday()]
+    if entry['week_day'] != actual_week:
+        report['schema_violations'].append({
+            'file': file_name, 'date': key,
+            'problem': f'曜日不一致: 記載={entry["week_day"]}, 実際={actual_week}',
+        })
+    for column in COLUMNS[1:]:
+        if not VALUE_RE.match(entry[column]):
+            report['schema_violations'].append({
+                'file': file_name, 'date': key,
+                'problem': f'値の形式が不正: {column}={entry[column]!r}',
+            })
 
-    期間の開始日と終了日を指定することで、その期間内に存在しない日付を抽出する
-    日付のフォーマットについては、以下のように指定する
-    - 2024年度6月25日 -> 2024_06_25
-    '''
-    coop_data = load_json('data/coop_data.json')
-    # このデータの最も古い日付と新しい日付を取得する
-    start_date = min(coop_data.keys())
-    end_date = max(coop_data.keys())
-    print(f'Start date: {start_date}, End date: {end_date}')
-    check_date = datetime.strptime(start_date, '%Y_%m_%d')
-    while check_date <= datetime.strptime(end_date, '%Y_%m_%d'):
-        check_date_str = check_date.strftime('%Y_%m_%d')
-        if check_date_str not in coop_data:
-            print(f'Nonexistent date: {check_date_str}')
-        check_date += timedelta(days=1)
-    print('All date is checked.')
 
-def test():
-    pdf_paths = [f'pdf/{i}' for i in os.listdir('pdf') if i.endswith('.pdf')]
-    for pdf_path in pdf_paths:
-        print(f'PDF path: {pdf_path}')
-        date_dict = text_extract(pdf_path)
-        extract_error_date(date_dict)
-    extract_nonexistent_date()
+def main() -> int:
+    report = {
+        'missing_dates': [],
+        'schema_violations': [],
+        'consistency_errors': [],
+        'extraction_errors': [],
+    }
+
+    # fetch_coop_data.py が残した未解決の抽出エラー
+    for path in sorted(ERROR_DIR.glob('*.json')):
+        if path == REPORT_FILE:
+            continue
+        artifact = load_json(path)
+        report['extraction_errors'].append({
+            'date': artifact.get('date', path.stem),
+            'file': str(path),
+            'pdf': artifact.get('pdf'),
+        })
+
+    month_files = sorted(
+        (p for p in DATA_DIR.glob('*.json') if MONTH_FILE_RE.match(p.name)),
+        key=lambda p: tuple(map(int, MONTH_FILE_RE.match(p.name).groups())),
+    )
+    if not month_files:
+        report['consistency_errors'].append({'problem': f'{DATA_DIR}/ に月次ファイルがありません'})
+
+    known_gaps = load_json(KNOWN_GAPS_FILE) if KNOWN_GAPS_FILE.exists() else {}
+
+    monthly_data = {path: load_json(path) for path in month_files}
+    all_monthly_keys = set()
+    for data in monthly_data.values():
+        all_monthly_keys.update(data.keys())
+
+    for path, data in monthly_data.items():
+        year, month = map(int, MONTH_FILE_RE.match(path.name).groups())
+
+        # 月次完全性: ファイル名の月の全日付が結合データのどこかに存在すること
+        days_in_month = calendar.monthrange(year, month)[1]
+        for day in range(1, days_in_month + 1):
+            key = f'{year}_{month:02d}_{day:02d}'
+            if key not in all_monthly_keys and key not in known_gaps:
+                report['missing_dates'].append({'date': key, 'file': str(path)})
+
+        # スキーマ・曜日(前後月のスピルオーバー日付も対象)
+        for key, entry in data.items():
+            check_entry(str(path), key, entry, report)
+
+    # 結合データ: 月次ファイルの全日付を含み、それ以外を含まないこと
+    coop_path = DATA_DIR / 'coop_data.json'
+    if coop_path.exists():
+        coop_data = load_json(coop_path)
+        for key in sorted(all_monthly_keys - set(coop_data.keys())):
+            report['consistency_errors'].append({
+                'date': key, 'problem': 'coop_data.json に存在しない',
+            })
+        for key in sorted(set(coop_data.keys()) - all_monthly_keys):
+            report['consistency_errors'].append({
+                'date': key, 'problem': 'どの月次ファイルにも存在しない日付が coop_data.json にある',
+            })
+        for key, entry in coop_data.items():
+            check_entry(str(coop_path), key, entry, report)
+    else:
+        report['consistency_errors'].append({'problem': f'{coop_path} がありません'})
+
+    violations = sum(len(v) for v in report.values())
+    if violations == 0:
+        if REPORT_FILE.exists():
+            REPORT_FILE.unlink()
+        print(f'All checks passed. ({len(month_files)} files, {len(all_monthly_keys)} dates)')
+        return 0
+
+    for item in report['missing_dates']:
+        print(f'欠落日付: {item["date"]} ({item["file"]})')
+    for item in report['schema_violations']:
+        print(f'スキーマ違反: {item.get("date", "-")} ({item["file"]}) {item["problem"]}')
+    for item in report['consistency_errors']:
+        print(f'整合性エラー: {item.get("date", "-")} {item["problem"]}')
+    for item in report['extraction_errors']:
+        print(f'抽出エラー: {item["date"]} ({item["file"]}) PDF: {item["pdf"]}')
+    print(f'\n{violations} violations found.')
+
+    ERROR_DIR.mkdir(exist_ok=True)
+    with open(REPORT_FILE, 'w', encoding='UTF-8') as f:
+        json.dump(report, f, ensure_ascii=False, indent=4)
+    print(f'Report written to {REPORT_FILE}')
+    return 1
 
 
 if __name__ == '__main__':
-    test()
+    sys.exit(main())

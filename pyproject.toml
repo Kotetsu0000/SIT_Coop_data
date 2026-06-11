@@ -1,0 +1,14 @@
+[project]
+name = "sit-coop-data"
+version = "1.0.0"
+description = "芝浦工業大学生協の営業時間データを自動収集・公開するシステム"
+requires-python = ">=3.13"
+dependencies = [
+    "beautifulsoup4>=4.12",
+    "discord-webhook",
+    "pdfplumber>=0.11",
+    "requests>=2.32",
+]
+
+[tool.uv.sources]
+discord-webhook = { git = "https://github.com/Kotetsu0000/discord_webhook.git" }

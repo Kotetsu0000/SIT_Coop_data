@@ -1,0 +1,37 @@
+name: Test
+
+# Pull Request(自動修正PR含む)と develop へのpushで、
+# データの再現性(ローカル再生成で差分が出ないこと)と完全性を検証する。
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Regenerate data from local PDFs
+        run: uv run python fetch_coop_data.py --local
+
+      - name: Check data is reproducible (no diff after regeneration)
+        run: git diff --exit-code data/
+
+      - name: Validate data
+        run: uv run python test.py
