@@ -4,6 +4,10 @@ name: Claude Auto Fix
 # 起動経路:
 #   1. fetch_coop_data.yml が検証失敗時に workflow_dispatch で起動(自動)
 #   2. Issueに extraction-error ラベルを手動で付けた場合(人間によるリトライ用)
+#
+# 修正用ブランチはワークフロー側で事前に作成・checkoutし、Claudeはその上で
+# コミット・プッシュ・PR作成のみを行う。また Stop フック(scripts/stop_hook.sh)により
+# test.py が通らない状態では作業を終了できない。
 
 on:
   workflow_dispatch:
@@ -43,6 +47,18 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Setup git identity and create fix branch
+        id: branch
+        env:
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          git config --global user.name "claude[bot]"
+          git config --global user.email "claude[bot]@users.noreply.github.com"
+          BRANCH_NAME="claude-fix/issue-${ISSUE_NUMBER}-${RUN_ID}"
+          git checkout -b "$BRANCH_NAME"
+          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
 
@@ -53,13 +69,15 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          settings: '.github/claude-settings.json'
           claude_args: |
-            --model claude-sonnet-4-6
+            --model sonnet
             --max-turns 50
-            --allowedTools "Edit,Write,Read,Glob,Grep,Bash(uv:*),Bash(git:*),Bash(gh:*),Bash(ls:*),Bash(cat:*)"
+            --allowedTools "Edit,Write,Read,Glob,Grep,Bash(uv:*),Bash(git:*),Bash(gh:*),Bash(ls:*),Bash(cat:*),Bash(bash:*)"
           prompt: |
             あなたは芝浦工業大学生協の営業時間データ抽出エラーを修正します。
             対象Issue: #${{ steps.issue.outputs.number }} (リポジトリ: ${{ github.repository }})
+            作業ブランチ: ${{ steps.branch.outputs.branch_name }} (作成・checkout済み)
 
             これは決まりきった修正フローです。以下の手順に正確に従ってください。
 
@@ -81,16 +99,17 @@ jobs:
                無い場合)は、`known_gaps.json` に日付と理由を追加する。
             6. `uv run python fetch_coop_data.py --local` でデータを再生成する。
             7. `uv run python test.py` を実行し、成功する(exit 0)ことを確認する。
-               失敗する場合は手順4-6を見直す。
-            8. ブランチ `claude-fix/issue-${{ steps.issue.outputs.number }}` を作成し、
+               失敗する場合は手順4-6を見直す。テストが通らない状態では
+               Stopフックにより作業を終了できない。
+            8. `git status` で意図しない変更が含まれていないことを確認し、
                変更(overrides.json / known_gaps.json / data/ / errors/)をコミットして
-               プッシュする。コミット前に `git status` で意図しない変更が
-               含まれていないことを確認する。
-            9. `gh pr create` で main 向けのPull Requestを作成する。
+               `git push -u origin ${{ steps.branch.outputs.branch_name }}` でプッシュする。
+            9. `gh pr create --base main` で Pull Request を作成する。
                本文に修正内容の説明と `Fixes #${{ steps.issue.outputs.number }}` を含める。
 
             禁止事項:
             - `fetch_coop_data.py` や `test.py` などのコードは変更しない
               (データ修正は overrides.json / known_gaps.json で完結させる)
+            - 新しいブランチを作成しない(指定の作業ブランチをそのまま使う)
             - main に直接プッシュしない
             - overrides.json の既存エントリを削除・変更しない

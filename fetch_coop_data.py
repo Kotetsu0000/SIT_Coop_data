@@ -32,6 +32,10 @@ PDF_DIR = pathlib.Path('pdf')
 DATA_DIR = pathlib.Path('data')
 ERROR_DIR = pathlib.Path('errors')
 OVERRIDE_FILE = pathlib.Path('overrides.json')
+# 生協サイトに現在掲載されているPDFの一覧。coop_data.json(公開ページが参照)は
+# このPDFの月のデータだけで構成する(容量を抑えるため全期間は含めない)。
+# --local 実行時の再現性のためにファイルとして永続化する。
+CURRENT_PDFS_FILE = pathlib.Path('current_pdfs.json')
 
 # 公開データのカラム(この順でPDFテーブルの列と対応する)
 TIME_COLUMNS = [
@@ -225,10 +229,12 @@ def save_json(data: dict, path) -> None:
 
 
 def download_coop_pdfs() -> None:
-    """生協サイトに掲載されているPDFのうち、未取得のものを保存する。"""
+    """生協サイトに掲載されているPDFのうち未取得のものを保存し、
+    現在掲載中のPDF一覧を current_pdfs.json に記録する。"""
     PDF_DIR.mkdir(exist_ok=True)
     response = requests.get(COOP_URL)
     soup = BeautifulSoup(response.text, 'html.parser')
+    current = []
     for link in soup.find_all('a', href=True):
         if not link['href'].endswith('.pdf'):
             continue
@@ -242,6 +248,24 @@ def download_coop_pdfs() -> None:
             pdf_response = requests.get(pdf_url)
             with open(pdf_path, 'wb') as f:
                 f.write(pdf_response.content)
+        current.append(pdf_path.name)
+    if current:
+        save_json(sorted(set(current)), CURRENT_PDFS_FILE)
+    else:
+        # サイト側の一時的な問題で一覧が空の場合は既存の一覧を維持する
+        print('掲載中のPDFが見つかりません。current_pdfs.json は更新しません。')
+
+
+def load_current_months() -> set:
+    """current_pdfs.json から、coop_data.json に含める月の集合を返す。"""
+    if not CURRENT_PDFS_FILE.exists():
+        raise FileNotFoundError(
+            f'{CURRENT_PDFS_FILE} がありません。--local の前に一度通常実行するか、'
+            'リポジトリのファイルを取得してください。'
+        )
+    with open(CURRENT_PDFS_FILE, encoding='UTF-8') as f:
+        names = json.load(f)
+    return {extract_year_month(name) for name in names} - {(0, 0)}
 
 
 def process_all() -> list:
@@ -249,6 +273,7 @@ def process_all() -> list:
 
     同月に複数バージョンがある場合は最新バージョンのみを採用する。
     抽出が解決できなかった日付は errors/YYYY_MM_DD.json に保存し、出力から除外する。
+    coop_data.json には current_pdfs.json に掲載中の月のデータのみを含める。
 
     Returns:
         list: 未解決の日付情報(エラーアーティファクトと同形式)のリスト
@@ -256,6 +281,7 @@ def process_all() -> list:
     DATA_DIR.mkdir(exist_ok=True)
     ERROR_DIR.mkdir(exist_ok=True)
     overrides = load_overrides()
+    current_months = load_current_months()
 
     # 月ごとに最新バージョンのPDFを選ぶ
     latest_by_month = {}
@@ -291,7 +317,8 @@ def process_all() -> list:
             month_data[key] = {'week_day': info['week_day']}
             month_data[key].update(zip(TIME_COLUMNS, values))
         save_json(month_data, DATA_DIR / f'{year}_{month}.json')
-        coop_data.update(month_data)
+        if (year, month) in current_months:
+            coop_data.update(month_data)
 
     save_json(dict(sorted(coop_data.items())), DATA_DIR / 'coop_data.json')
     return unresolved

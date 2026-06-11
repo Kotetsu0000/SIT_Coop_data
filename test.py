@@ -10,8 +10,9 @@
        理由付きで記録することで許容される。
     2. スキーマ: 全エントリが10カラムを過不足なく持ち、値が正規の形式であること
     3. 曜日整合: week_day が日付から計算した実際の曜日と一致すること
-    4. 結合整合: 月次ファイルの全日付が coop_data.json に存在し、
-       coop_data.json に月次ファイル由来でない日付が無いこと
+    4. 結合整合: coop_data.json(公開ページが参照、容量を抑えるため
+       current_pdfs.json に掲載中の月のみで構成)の日付集合が、
+       掲載中の月の月次ファイルの結合と一致すること
     5. 抽出エラーの不在: errors/ に未解決の抽出エラー(YYYY_MM_DD.json)が
        残っていないこと(隣月PDFのスピルオーバーで日付がカバーされていても、
        抽出失敗は修正されるべきものとして検出する)
@@ -33,6 +34,7 @@ DATA_DIR = pathlib.Path('data')
 ERROR_DIR = pathlib.Path('errors')
 REPORT_FILE = ERROR_DIR / 'validation_report.json'
 KNOWN_GAPS_FILE = pathlib.Path('known_gaps.json')
+CURRENT_PDFS_FILE = pathlib.Path('current_pdfs.json')
 
 COLUMNS = [
     'week_day', 'shop_self', 'shop_counter', 'cafeteria', 'coop_plaza_self',
@@ -124,22 +126,36 @@ def main() -> int:
         for key, entry in data.items():
             check_entry(str(path), key, entry, report)
 
-    # 結合データ: 月次ファイルの全日付を含み、それ以外を含まないこと
+    # 結合データ: 掲載中の月(current_pdfs.json)の月次ファイルの結合と一致すること
     coop_path = DATA_DIR / 'coop_data.json'
-    if coop_path.exists():
+    if not coop_path.exists():
+        report['consistency_errors'].append({'problem': f'{coop_path} がありません'})
+    elif not CURRENT_PDFS_FILE.exists():
+        report['consistency_errors'].append({'problem': f'{CURRENT_PDFS_FILE} がありません'})
+    else:
+        current_months = set()
+        for name in load_json(CURRENT_PDFS_FILE):
+            m = re.search(r'(\d{4})_(\d{1,2})月', name)
+            if m:
+                current_months.add((int(m.group(1)), int(m.group(2))))
+
+        expected_keys = set()
+        for path, data in monthly_data.items():
+            year, month = map(int, MONTH_FILE_RE.match(path.name).groups())
+            if (year, month) in current_months:
+                expected_keys.update(data.keys())
+
         coop_data = load_json(coop_path)
-        for key in sorted(all_monthly_keys - set(coop_data.keys())):
+        for key in sorted(expected_keys - set(coop_data.keys())):
             report['consistency_errors'].append({
-                'date': key, 'problem': 'coop_data.json に存在しない',
+                'date': key, 'problem': 'coop_data.json に存在しない(掲載中の月の日付)',
             })
-        for key in sorted(set(coop_data.keys()) - all_monthly_keys):
+        for key in sorted(set(coop_data.keys()) - expected_keys):
             report['consistency_errors'].append({
-                'date': key, 'problem': 'どの月次ファイルにも存在しない日付が coop_data.json にある',
+                'date': key, 'problem': '掲載中の月に由来しない日付が coop_data.json にある',
             })
         for key, entry in coop_data.items():
             check_entry(str(coop_path), key, entry, report)
-    else:
-        report['consistency_errors'].append({'problem': f'{coop_path} がありません'})
 
     violations = sum(len(v) for v in report.values())
     if violations == 0:
