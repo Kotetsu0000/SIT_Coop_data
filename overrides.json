@@ -1,0 +1,140 @@
+{
+    "2024_07_06": {
+        "action": "cells",
+        "cells": {
+            "shop_counter": "休業"
+        },
+        "note": "体験授業特別営業(詳細は6月PDF参照)"
+    },
+    "2024_08_03": {
+        "action": "cells",
+        "cells": {
+            "coop_plaza_counter": "不明"
+        },
+        "note": "オープンキャンパス営業(注釈セルのため値が取れない)"
+    },
+    "2024_08_04": {
+        "action": "cells",
+        "cells": {
+            "coop_plaza_counter": "不明"
+        },
+        "note": "オープンキャンパス営業(注釈セルのため値が取れない)"
+    },
+    "2024_08_24": {
+        "action": "cells",
+        "cells": {
+            "shop_counter": "不明"
+        },
+        "note": "オープンキャンパス営業(注釈セルのため値が取れない)"
+    },
+    "2024_08_25": {
+        "action": "cells",
+        "cells": {
+            "shop_counter": "不明"
+        },
+        "note": "オープンキャンパス営業(注釈セルのため値が取れない)"
+    },
+    "2025_01_19": {
+        "action": "close_all",
+        "note": "共通テスト期間"
+    },
+    "2025_02_01": {
+        "action": "close_all",
+        "note": "入試期間"
+    },
+    "2025_02_03": {
+        "action": "close_all",
+        "note": "入試期間"
+    },
+    "2025_02_04": {
+        "action": "close_all",
+        "note": "入試期間"
+    },
+    "2025_03_03": {
+        "action": "cells",
+        "cells": {
+            "dining_hall": "休業"
+        },
+        "note": "食堂リニューアル工事"
+    },
+    "2025_03_04": {
+        "action": "cells",
+        "cells": {
+            "dining_hall": "休業"
+        },
+        "note": "食堂リニューアル工事"
+    },
+    "2025_03_05": {
+        "action": "cells",
+        "cells": {
+            "dining_hall": "休業"
+        },
+        "note": "食堂リニューアル工事"
+    },
+    "2025_03_06": {
+        "action": "cells",
+        "cells": {
+            "dining_hall": "休業"
+        },
+        "note": "食堂リニューアル工事"
+    },
+    "2025_03_07": {
+        "action": "cells",
+        "cells": {
+            "dining_hall": "休業"
+        },
+        "note": "食堂リニューアル工事"
+    },
+    "2025_03_09": {
+        "action": "cells",
+        "cells": {
+            "dining_hall": "休業"
+        },
+        "note": "食堂リニューアル工事"
+    },
+    "2025_03_10": {
+        "action": "cells",
+        "cells": {
+            "dining_hall": "休業"
+        },
+        "note": "食堂リニューアル工事"
+    },
+    "2025_04_30": {
+        "action": "close_all",
+        "note": "ゴールデンウィーク休業"
+    },
+    "2025_05_02": {
+        "action": "close_all",
+        "note": "ゴールデンウィーク休業"
+    },
+    "2025_08_02": {
+        "action": "cells",
+        "cells": {
+            "coop_plaza_counter": "不明"
+        },
+        "note": "オープンキャンパス営業(注釈セルのため値が取れない)"
+    },
+    "2025_08_03": {
+        "action": "cells",
+        "cells": {
+            "coop_plaza_counter": "不明"
+        },
+        "note": "オープンキャンパス営業(注釈セルのため値が取れない)"
+    },
+    "2026_01_18": {
+        "action": "close_all",
+        "note": "共通テスト期間"
+    },
+    "2026_02_01": {
+        "action": "close_all",
+        "note": "入試期間"
+    },
+    "2026_02_03": {
+        "action": "close_all",
+        "note": "入試期間"
+    },
+    "2026_02_04": {
+        "action": "close_all",
+        "note": "入試期間"
+    }
+}

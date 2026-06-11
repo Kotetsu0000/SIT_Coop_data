@@ -275,6 +275,18 @@
         "office": "10:00-16:00",
         "realtor": "10:30-17:30"
     },
+    "2025_12_24": {
+        "week_day": "Wednesday",
+        "shop_self": "11:30-12:30",
+        "shop_counter": "11:30-12:30",
+        "cafeteria": "11:30-12:30",
+        "coop_plaza_self": "休業",
+        "coop_plaza_counter": "休業",
+        "dining_hall": "休業",
+        "shibaura_bakery": "休業",
+        "office": "休業",
+        "realtor": "休業"
+    },
     "2025_12_25": {
         "week_day": "Thursday",
         "shop_self": "休業",
@@ -420,7 +432,7 @@
         "realtor": "休業"
     },
     "2026_01_06": {
-        "week_day": "Monday",
+        "week_day": "Tuesday",
         "shop_self": "休業",
         "shop_counter": "休業",
         "cafeteria": "休業",
@@ -432,7 +444,7 @@
         "realtor": "休業"
     },
     "2026_01_07": {
-        "week_day": "Tuesday",
+        "week_day": "Wednesday",
         "shop_self": "8:30-19:00",
         "shop_counter": "10:20-17:20",
         "cafeteria": "11:30-14:00",
