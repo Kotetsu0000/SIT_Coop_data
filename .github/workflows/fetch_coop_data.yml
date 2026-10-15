@@ -23,20 +23,26 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Install dependencies
+        id: install
+        continue-on-error: true
         run: uv sync
 
       - name: Fetch Coop Data
+        id: fetch
+        if: steps.install.outcome == 'success'
+        continue-on-error: true
         env:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
         run: uv run python fetch_coop_data.py
 
       - name: Validate data
         id: validate
+        if: steps.fetch.outcome == 'success'
         continue-on-error: true
         run: uv run python test.py
 
       - name: Commit and push if changes
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && steps.fetch.outcome == 'success'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -76,6 +82,51 @@ jobs:
           # 自動修正ワークフローを workflow_dispatch で直接起動する
           gh workflow run claude_auto_fix.yml -f issue_number="$ISSUE_NUMBER"
 
-      - name: Fail job if validation failed
-        if: steps.validate.outcome == 'failure'
+      - name: Create issue and trigger auto fix on CI failure
+        if: >-
+          (steps.install.outcome == 'failure' || steps.fetch.outcome == 'failure') &&
+          github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create ci-error \
+            --description "依存関係・ワークフロー起因のCI障害" --color B60205 --force
+
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          BODY="## CI障害
+
+          定期実行(\`fetch_coop_data.yml\`)が依存関係またはスクリプト実行の段階で失敗しました。
+          データ抽出エラーではなく、CI/依存関係の問題です。
+
+          - Install dependencies: ${{ steps.install.outcome }}
+          - Fetch Coop Data: ${{ steps.fetch.outcome }}
+          - Workflow run: $RUN_URL
+
+          ### 修正範囲
+          \`pyproject.toml\` / \`.python-version\` / \`uv.lock\` / \`.github/workflows/*.yml\`
+          など依存関係・ワークフロー設定の修正で解決してください。
+          \`fetch_coop_data.py\` や \`test.py\` の抽出ロジック本体は変更しないでください。"
+
+          EXISTING=$(gh issue list --label ci-error --state open \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            echo "Open issue #$EXISTING already exists. Adding comment."
+            gh issue comment "$EXISTING" --body "$BODY"
+            exit 0
+          fi
+
+          ISSUE_URL=$(gh issue create \
+            --title "CI障害: $(date +%Y-%m-%d) 依存関係/ワークフローエラー" \
+            --label ci-error \
+            --body "$BODY")
+          ISSUE_NUMBER=$(basename "$ISSUE_URL")
+          echo "Created issue #$ISSUE_NUMBER"
+
+          gh workflow run claude_auto_fix_ci.yml -f issue_number="$ISSUE_NUMBER"
+
+      - name: Fail job if any step failed
+        if: >-
+          steps.install.outcome == 'failure' ||
+          steps.fetch.outcome == 'failure' ||
+          steps.validate.outcome == 'failure'
         run: exit 1

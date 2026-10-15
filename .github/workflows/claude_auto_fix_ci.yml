@@ -1,0 +1,112 @@
+name: Claude Auto Fix CI
+
+# 依存関係・ワークフロー起因のCI障害(例: uv syncの解決失敗、ビルドエラー)の
+# IssueをClaude Code(Sonnet)が修正し、Pull Requestを作成する。
+# データ抽出ロジック(fetch_coop_data.py / test.py)は対象外。
+# 起動経路:
+#   1. fetch_coop_data.yml が Install dependencies / Fetch Coop Data 失敗時に
+#      workflow_dispatch で起動(自動)
+#   2. Issueに ci-error ラベルを手動で付けた場合(人間によるリトライ用)
+#
+# 修正用ブランチはワークフロー側で事前に作成・checkoutし、Claudeはその上で
+# コミット・プッシュ・PR作成のみを行う。また Stop フック(scripts/stop_hook.sh)により
+# test.py が通らない状態では作業を終了できない。
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: '修正対象のIssue番号'
+        required: true
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  auto-fix-ci:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.label.name == 'ci-error'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resolve issue number
+        id: issue
+        env:
+          INPUT_NUMBER: ${{ inputs.issue_number }}
+          EVENT_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          NUMBER="${INPUT_NUMBER:-$EVENT_NUMBER}"
+          echo "number=$NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup git identity and create fix branch
+        id: branch
+        env:
+          ISSUE_NUMBER: ${{ steps.issue.outputs.number }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          git config --global user.name "claude[bot]"
+          git config --global user.email "claude[bot]@users.noreply.github.com"
+          BRANCH_NAME="claude-fix-ci/issue-${ISSUE_NUMBER}-${RUN_ID}"
+          git checkout -b "$BRANCH_NAME"
+          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Fix CI errors with Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          settings: '.github/claude-settings.json'
+          claude_args: |
+            --model sonnet
+            --max-turns 50
+            --allowedTools "Edit,Write,Read,Glob,Grep,Bash(uv:*),Bash(git:*),Bash(gh:*),Bash(ls:*),Bash(cat:*),Bash(bash:*)"
+          prompt: |
+            あなたは芝浦工業大学生協データ収集システムのCI障害(依存関係・ワークフロー起因)を
+            修正します。これはデータ抽出エラーとは別種の障害です。
+            対象Issue: #${{ steps.issue.outputs.number }} (リポジトリ: ${{ github.repository }})
+            作業ブランチ: ${{ steps.branch.outputs.branch_name }} (作成・checkout済み)
+            `uv` コマンド自体はセットアップ済みだが、`uv sync` が失敗する状態の可能性がある。
+            まず `uv sync` を実行して現在の状況を確認すること。
+
+            1. `gh issue view ${{ steps.issue.outputs.number }}` でIssue本文を読み、
+               Install dependencies / Fetch Coop Data のどちらが失敗したか、
+               Workflow runのログ(`gh run view <run_id> --log-failed` 等)を確認する。
+            2. 原因を特定する(例: 新しいPythonバージョンに依存ライブラリのビルド済みwheelが
+               無い、依存バージョンの衝突、ワークフロー設定の誤りなど)。
+            3. 修正は以下のファイルの範囲内で行う:
+               - `pyproject.toml` / `.python-version` / `uv.lock`
+               - `.github/workflows/*.yml`
+               それ以外のコード(`fetch_coop_data.py`, `test.py`,
+               `scripts/` 以下の抽出・検証ロジック本体)は変更しない。
+            4. `uv sync` が成功することを確認する。
+            5. `uv run python fetch_coop_data.py --local` と `uv run python test.py` を実行し、
+               どちらも成功する(exit 0)ことを確認する。
+               失敗する場合は手順2-4を見直す。テストが通らない状態では
+               Stopフックにより作業を終了できない。
+            6. `git status` で意図しない変更が含まれていないことを確認し、
+               変更をコミットして
+               `git push -u origin ${{ steps.branch.outputs.branch_name }}` でプッシュする。
+            7. `gh pr create --base main` で Pull Request を作成する。
+               本文に原因と修正内容の説明、`Fixes #${{ steps.issue.outputs.number }}` を含める。
+
+            禁止事項:
+            - データ抽出・検証ロジック本体(`fetch_coop_data.py`, `test.py`,
+              `scripts/` 以下の抽出関連コード)は変更しない
+            - 新しいブランチを作成しない(指定の作業ブランチをそのまま使う)
+            - main に直接プッシュしない
+            - overrides.json / known_gaps.json は変更しない(データ抽出エラー専用の
+              別フローで扱う)
